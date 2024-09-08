@@ -1,0 +1,11 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.kubsterman.tradegame
+productName: stock market game
+win:
+  target:
+    - nsis
+  icon: assets/64x64.ico
+files: []
+electronVersion: 32.0.2
