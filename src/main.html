@@ -6,64 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>stock game</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .stock {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        button {
-            margin: 5px;
-            padding: 5px 10px;
-        }
-        #portfolio {
-            margin-top: 20px;
-            font-weight: bold;
-        }
-        canvas {
-            width: 100%;
-            height: 200px;
-            border: 1px solid #ddd;
-            margin-top: 20px;
-        }
+
     </style>
 </head>
 <body>
+    <button style="display: block;" onclick="selectStock(0)">MTS</button>
+    <button style="display: block;" onclick="selectStock(1)">HSC</button>
+    <button style="display: block;" onclick="selectStock(2)">DPA</button>
+
     <h1>stock</h1>
     <div id="money">money: $1000</div>
-    <div id="stock1" class="stock">
-        <h2>meatstop</h2>
-        <div>price: $<span id="price1">100</span></div>
-        <div>owned: <span id="owned1">0</span></div>
-        <button onclick="buyStock(1,1)">buy</button>
-        <button onclick="sellStock(1,1)">sell</button>
-        <button onclick="buyStock(1,Math.floor(money/stocks[0].price))">buy all</button>
-        <button onclick="sellStock(1,stocks[0].owned)">sell all</button>
-    </div>
-    <div id="stock2" class="stock">
-        <h2>hard slime cafe</h2>
-        <div>price: $<span id="price2">50</span></div>
-        <div>owned: <span id="owned2">0</span></div>
-        <button onclick="buyStock(2,1)">buy</button>
-        <button onclick="sellStock(2,1)">sell</button>
-        <button onclick="buyStock(2,Math.floor(money/stocks[1].price))">buy all</button>
-        <button onclick="sellStock(2,Math.floor(stocks[1].owned))">sell all</button>
-       
-    </div>
-    <div id="stock3" class="stock">
-      <h2>du pont academy</h2>
-      <div>Price: $<span id="price3">50</span></div>
-      <div>Owned: <span id="owned3">0</span></div>
-      <button onclick="buyStock(3,1)">buy</button>
-      <button onclick="sellStock(3,1)">sell</button>
-      <button onclick="buyStock(3,Math.floor(money/stocks[2].price))">buy all</button>
-      <button onclick="sellStock(3,stocks[2].owned)">sell all</button>
-    </div>
+    <div id="stock-details"></div>
     <div id="portfolio">total value: $1000</div>
     <canvas id="stockGraph"></canvas>
     <script>
@@ -71,10 +24,15 @@
         var crashBoomHistory = 0;
         var loaded = false;
         var stocks = [
-            { name: "meatstop", price: 100, owned: 0, history: [], crashBoomHistory: 0},
-            { name: "hard slime cafe", price: 50, owned: 0, history: [], crashBoomHistory: 0},
-            { name: "du pont academy", price: 50, owned: 0, history: [], crashBoomHistory: 0}
+            { name: "meatstop", price: 100, owned: 0, history: [], crashBoomHistory: 0, type: 0, id: 0},
+            { name: "hard slime cafe", price: 50, owned: 0, history: [], crashBoomHistory: 0, type: 0, id: 1},
+            { name: "du pont academy", price: 50, owned: 0, history: [], crashBoomHistory: 0, type: 0, id: 2},
+
+            // { name: "tyson ltd.", price: 100, owned: 0, history: [], crashBoomHistory: 0, type: 1},
+            // { name: "hard slime cafe", price: 50, owned: 0, history: [], crashBoomHistory: 0, type: 1},
+            // { name: "du pont academy", price: 50, owned: 0, history: [], crashBoomHistory: 0, type: 1}
         ];
+        var selectedStock = null;
 
         const canvas = document.getElementById('stockGraph');
         const ctx = canvas.getContext('2d');
@@ -82,19 +40,50 @@
         const graphHeight = canvas.height;
 
         function updateDisplay() {
-            
-
             document.getElementById('money').textContent = 'money: $' + money.toFixed(2).toString();
             
             stocks.forEach((stock, index) => {
-                document.getElementById(`price${index + 1}`).textContent = stock.price.toFixed(2);
-                document.getElementById(`owned${index + 1}`).textContent = stock.owned;
+                // if (selectedStock && selectedStock == stock) {
+                //     document.getElementById(`price${index + 1}`).textContent = stock.price.toFixed(2);
+                //     alert('updateDisplay');
+                //     document.getElementById(`owned${index + 1}`).textContent = stock.owned;
+                //     document.getElementById(`change${index + 1}`).textContent = stock.history[stock.history.length]-stock.history[stock.history.length-5];
+                // }
+                
             });
+            
             const portfolioValue = money + stocks.reduce((total, stock) => total + stock.price * stock.owned, 0);
+            
             document.getElementById('portfolio').textContent = `total portfolio value: $${portfolioValue.toFixed(2)}`;
             
         }
-
+        function selectStock(index) {
+            selectedStock = stocks[index];
+            updateStockDetails();
+            updateGraph();
+        }
+        function updateStockDetails() {
+            const details = document.getElementById('stock-details');
+            if (selectedStock) {
+                details.innerHTML = `
+                    <h2 id="stock-name">${selectedStock.name}</h2>
+                    <p id="stock-price">Price: $<span id="price-value">${selectedStock.price.toFixed(2)}</span></p>
+                    <p id="stock-owned">Owned: <span id="owned-value">${selectedStock.owned}</span></p>
+                    <p id="stock-change">Change: <span id="change-value">${selectedStock.change || '0.00'}%</span></p>
+                    <button onclick="buyStock()">Buy</button>
+                    <button onclick="sellStock()">Sell</button>
+                `;
+            } else {
+                details.innerHTML = 'Select a stock to see details';
+            }
+        }
+        function openMenu(stockId){
+            document.querySelectorAll('.stock').forEach(div => {
+                div.classList.add('invisible');
+            });
+            document.getElementById('stock'+(stockId+1).toString()).classList.toggle('invisible');
+            
+        }
         function buyStock(stockId, amount) {
             const stock = stocks[stockId - 1];
             if (money >= stock.price*amount) {
@@ -128,7 +117,7 @@
                                 (Math.random() - 0.5) *  Math.sin(x*2)*20 +
                                  Math.abs(Math.cos(x*13)*2) + 0.75)/3; //+ (Math.random()-1.1)*5 + Math.random()*(3.75-2)+2)/2;
                   
-                if (Math.random() < 0.1) {
+                if (Math.random() <= 0.1) {
                     if (stock.crashBoomHistory>1){
                         stock.crashBoomHistory = -0.1;
                     }else if(crashBoomHistory<-1) {
@@ -139,22 +128,29 @@
                         // crash
                         const crashFactor = 0.8 + Math.random() * 0.1;
                         stock.price *= crashFactor;
-                        stock.crashBoomHistory-=0.2;
+                        stock.crashBoomHistory-=0.1;
                     } else {
                         // boom
                         const boomFactor = 1.1 + Math.random() * 0.1;
                         stock.price *= boomFactor;
-                        stock.crashBoomHistory+=0.2;
+                        stock.crashBoomHistory+=0.1;
                     }
                 } 
-                    stock.price = Math.max(1, stock.price + change);
-                    stock.history.push(stock.price);
-                    if (stock.history.length > 50) stock.history.shift();
-
+                stock.price = Math.max(1, stock.price + change);
+                stock.change = change.toFixed(2);
+                if (stock.change < 0){
+                    document.getElementById('price-value').style.color = 'red';
+                }
+                else{
+                    document.getElementById('price-value').style.color = 'green';
+                }
+                stock.history.push(stock.price);
+                if (stock.history.length > 50) stock.history.shift();
+                
                 
             });
             
-            updateDisplay();
+            updateStockDetails();
             drawGraph();
         }
 
@@ -162,12 +158,13 @@
             
             ctx.clearRect(0, 0, graphWidth, graphHeight);
             
-            const colors = ['red', 'green', 'aqua'];
+            const colors = ['red', 'green', 'aqua', 'blue', 'purple', 'orange'];
             const maxPrice = Math.max(...stocks.flatMap(stock => stock.history));
             const minPrice = Math.min(...stocks.flatMap(stock => stock.history));
             const scaleY = (graphHeight / maxPrice);
-
+            
             stocks.forEach((stock, stockIndex) => {
+                
                 ctx.strokeStyle = colors[stockIndex];
                 ctx.beginPath();
                 stock.history.forEach((price, index) => {
@@ -188,8 +185,8 @@
                 ctx.fillText(stock.name, 10, 20 + index * 20);
             });
         }
-        
-        setInterval(updateStockPrices, 500);
+       
+        setInterval(updateStockPrices, 1000);
         updateDisplay();
         
     </script>

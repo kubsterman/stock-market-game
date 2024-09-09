@@ -1,0 +1,4 @@
+owner: kubsterman
+repo: stock-market-game
+provider: github
+updaterCacheDirName: electron-test-updater
